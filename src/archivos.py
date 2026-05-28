@@ -90,6 +90,7 @@ def exportar_json(df, nombre_archivo):  # Exporta un DataFrame a JSON.
         print(f"Error al exportar JSON: {e}")
 
 
+
 # PRUEBA RÁPIDA DEL MÓDULO
 # SOLO SE EJECUTA SI SE CORRE archivos.py DIRECTAMENTE
 
