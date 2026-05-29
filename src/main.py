@@ -265,5 +265,11 @@ def app():
                 print("Opción no válida. Intenta nuevamente.")
 
 
+from PyQt5.QtWidgets import QApplication
+from interfaz import VentanaPrincipal
+import sys
 if __name__ == '__main__':
-    app()
+    app_qt = QApplication(sys.argv)
+    ventana = VentanaPrincipal()
+    ventana.show()
+    sys.exit(app_qt.exec_())
