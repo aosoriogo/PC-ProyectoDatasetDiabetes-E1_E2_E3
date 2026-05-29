@@ -1,17 +1,11 @@
-import os
+
+# Aqui se almacenan las funciones que se reusan pero no hacen parte directa de la logica
+import datetime as dt
 import csv
+import json
+import os
 
-import analisis as util
-import cli
-
-#Configuraciones iniciales
-
-RUTA_DATASET = "Data\\diabetes_COMPLETO.csv"
-RUTA_HISTORIAL = "resultados\\historial.csv"
-DIR_RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-#Variables globales
-dataset = []
+DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 #Funciones de la logica del programa
 def cargar_dataset_completo():
@@ -232,44 +226,70 @@ def resumen_dataset():
     util.guardar_stadisticas_dataset(externo)
 
 
+def guardar_historial(opcion: int, valor, resultados):
+    """
+    Correcciones realizadas:
+        se movio la funcion de main.py a utilidades.py
+        se cambio el if-elif-else por un match->case (No es recomendable usar if en cadenas de mas de 3 opciones)
+        se agrego un caso por defecto al match->case que levanta un error indicando que no existe ese caso
+        se movio la apertura del archivo hasta despues del match->case (El archivo debe abrirse y cerrarce en el menor numero de operaciones posibles)
+    """
+    
+    match opcion:
+        case 1:
+            t = 'Cargar dataset'
+        case 2:
+            t = 'Buscar coincidencia'
+        case 3:
+            t = 'Estadisticas basicas'
+        case 4:
+            t = 'Filtrar por'
+        case 5:
+            t = 'Seleccion dataset'
+        case '2':
+            t = 'Pacientes en riesgo'
+        case '3':
+            t = 'Guardar filtro'
+        case '4':
+            t = 'Cargar resultados'
+        case '5':
+            t = 'Visualizar historial'
+        case '6':
+            t = 'Funcionalidad opcional'
+        case _:
+            raise ValueError("Opcion no definida")
+    
 
+    resultados = str(resultados) + " resultados"
+    
+    cadena = [dt.datetime.now().strftime("%Y-%m-%d %H:%M"), t, valor, resultados]
 
-#funcion principal
-def app():
+    with open(os.path.join(DIR, "resultados/historial.csv"), mode='a', encoding='utf-8') as hist:
+
+        guardar = csv.writer(hist, delimiter=",")
+        guardar.writerow(cadena)
+
+def guardar_dataset(datos):
     while True:
-        #verificando que haya un dataset cargado, si no lo hay obliga a cargar uno si lo hay muestra el menu
-        if dataset == None or len(dataset)<=1:
-            opcion = 1
+        archivo = input("Digite el nombre del archivo a guardar sin extension: ")
+        if "." in archivo:
+            print("No utilice puntos ni caracteres especiales")
+            continue
         else:
-            opcion = cli.menu_interactivo()
+            archivo += ".csv"
+            ruta = os.path.join(DIR, f"resultados\\{archivo}")
+            with open(ruta, mode='w', newline='', encoding='utf-8') as busqueda:
+                headers = list(datos[0].keys())
+                #print(headers) #Linea de prueba
+                wr = csv.DictWriter(busqueda, headers, delimiter=",")
+                wr.writeheader()
+                wr.writerows(datos)
+                return True
+        return False
 
-        #Toma la opcion seleccionada en el menu y corre la funcion correspondien
-        match opcion:
-            case 1:
-                cargar_dataset_completo() # extendida para implementar la funcion de carga de archivo guardado 
-                resumen_dataset() # Funcion opcional entrega 2
-            case 2:
-                buscar()
-            case 3:
-                estadisticas_basicas()
-            case 4:
-                filtro()
-            case 5:
-                visualizar_historial()
-            case 6:
-                print("Elegiste SALIR DEL PROGRAMA")
-                break
-            case 'e':
-                print("Error: Solo se aceptan valores numericos")
-            case _:
-                print("Opción no válida. Intenta nuevamente.")
-
-
-from PyQt5.QtWidgets import QApplication
-from interfaz import VentanaPrincipal
-import sys
-if __name__ == '__main__':
-    app_qt = QApplication(sys.argv)
-    ventana = VentanaPrincipal()
-    ventana.show()
-    sys.exit(app_qt.exec_())
+def guardar_stadisticas_dataset(datos):
+    ruta = os.path.join(DIR, f"resultados\\resumen.json")
+    
+    with open(ruta, 'w', encoding='utf-8') as aw:
+        json.dump(datos, aw, indent=4)
+        
