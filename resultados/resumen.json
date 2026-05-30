@@ -1,0 +1,47 @@
+{
+    "Pregnancies": {
+        "max": 17.0,
+        "media": 3.85,
+        "min": 0.0
+    },
+    "Glucose": {
+        "max": 199.0,
+        "media": 120.89,
+        "min": 0.0
+    },
+    "BloodPressure": {
+        "max": 122.0,
+        "media": 69.11,
+        "min": 0.0
+    },
+    "SkinThickness": {
+        "max": 99.0,
+        "media": 20.54,
+        "min": 0.0
+    },
+    "Insulin": {
+        "max": 846.0,
+        "media": 79.8,
+        "min": 0.0
+    },
+    "BMI": {
+        "max": 67.1,
+        "media": 31.99,
+        "min": 0.0
+    },
+    "DiabetesPedigreeFunction": {
+        "max": 2.42,
+        "media": 0.47,
+        "min": 0.078
+    },
+    "Age": {
+        "max": 81.0,
+        "media": 33.24,
+        "min": 21.0
+    },
+    "Outcome": {
+        "max": 1.0,
+        "media": 0.35,
+        "min": 0.0
+    }
+}

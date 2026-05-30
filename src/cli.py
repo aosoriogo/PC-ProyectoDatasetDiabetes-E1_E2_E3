@@ -1,7 +1,9 @@
+#NOTA: NO CAMBIAR O BORRAR ESTE ARCHIVO QUE YA NO SE USA (YO LO HAGO AL FINAL)
+
 from tabulate import tabulate
 import os
 
-import utilidades as util
+import analisis as util
 
 def menu_interactivo():
     print("\n BIENVENIDOS AL MENÚ INTERACTIVO DE INSULINE_LOGIC!\n")
