@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import (QWidget, QPushButton, QTextEdit, QLabel, QVBoxLayout, QHBoxLayout, QLineEdit, QComboBox)
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from archivos import cargar_y_limpiar
+from archivos import cargar_y_limpiar, exportar_csv, guardar_historial, cargar_historial
 
 class VentanaPrincipal(QWidget):
 
@@ -43,6 +43,9 @@ class VentanaPrincipal(QWidget):
         self.boton_filtrar = QPushButton("Filtrar")
         self.boton_historial = QPushButton("Historial")
         self.boton_salir = QPushButton("Salir")
+        boton_exportar = QPushButton("Exportar CSV")
+        layout_botones.addWidget(boton_exportar)
+        boton_exportar.clicked.connect(self.exportar)
         layout_botones.addWidget(self.boton_cargar)
         layout_botones.addWidget(self.boton_buscar)
         layout_botones.addWidget(self.boton_estadisticas)
@@ -68,12 +71,10 @@ class VentanaPrincipal(QWidget):
     def cargar_dataset(self):
         self.df = cargar_y_limpiar("../Data/diabetes_COMPLETO.csv")
         if self.df is not None:
-            self.area_texto.setText(
-                f"Dataset cargado correctamente\n\n"
-                f"Filas: {len(self.df)}\n"
-                f"Columnas: {len(self.df.columns)}")
-        else:
-            self.area_texto.setText("Error al cargar dataset")
+            self.area_texto.setText("Dataset cargado correctamente")
+        guardar_historial("Dataset cargado")
+    else:
+        self.area_texto.setText("Error al cargar dataset")
 
     def buscar(self):
         if self.df is None:
@@ -102,4 +103,19 @@ class VentanaPrincipal(QWidget):
         self.area_texto.setText("Función lista para integrar con el módulo de análisis.")
 
     def historial(self):
-        self.area_texto.setText("Función lista para integrar con historial.")
+    df_historial = cargar_historial()
+
+    if df_historial is not None and not df_historial.empty:
+        texto = df_historial.to_string(index=False)
+        self.area_texto.setText(texto)
+    else:
+        self.area_texto.setText("No hay historial disponible")
+    
+    def exportar(self):
+    if self.df is not None:
+        nombre = "resultados/datos_exportados.csv"
+        exportar_csv(self.df, nombre)
+        self.area_texto.setText(f"Datos exportados en {nombre}")
+        guardar_historial("Exportación a CSV")
+    else:
+        self.area_texto.setText("No hay datos para exportar")
