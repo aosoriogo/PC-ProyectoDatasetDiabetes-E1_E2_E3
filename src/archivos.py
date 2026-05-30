@@ -1,5 +1,7 @@
 # MIGRACIÓN DE CARGA A PANDAS
 import pandas as pd
+import os
+from datetime import datetime
 
 def cargar_csv(ruta):  # Carga un archivo CSV y retorna un DataFrame.
     try:
@@ -104,3 +106,33 @@ if __name__ == "__main__":
         exportar_csv(datos, "../Data/diabetes_limpio.csv")  # Exporta CSV limpio
         exportar_json(datos, "../Data/diabetes_limpio.json")  # Exporta JSON limpio
         print("\nProceso finalizado correctamente.")
+       
+#historial
+def guardar_historial(accion, archivo="resultados/historial.csv"):
+    try:
+        os.makedirs("resultados", exist_ok=True)
+
+        fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        nueva_fila = pd.DataFrame([[fecha, accion]], columns=["fecha", "accion"])
+
+        if os.path.exists(archivo):
+            historial = pd.read_csv(archivo)
+            historial = pd.concat([historial, nueva_fila], ignore_index=True)
+        else:
+            historial = nueva_fila
+
+        historial.to_csv(archivo, index=False)
+
+    except Exception as e:
+        print(f"Error guardando historial: {e}")
+        
+def cargar_historial(archivo="resultados/historial.csv"):
+    try:
+        if os.path.exists(archivo):
+            return pd.read_csv(archivo)
+        else:
+            return pd.DataFrame(columns=["fecha", "accion"])
+    except Exception as e:
+        print(f"Error cargando historial: {e}")
+        return None
