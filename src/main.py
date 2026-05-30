@@ -272,4 +272,4 @@ if __name__ == '__main__':
     app_qt = QApplication(sys.argv)
     ventana = VentanaPrincipal()
     ventana.show()
-    sys.exit(app_qt.exec_())
+    sys.exit(app_qt.exec())

@@ -1,11 +1,12 @@
-from PyQt5.QtWidgets import (QWidget, QPushButton, QTextEdit, QLabel, QVBoxLayout, QHBoxLayout, QApplication)
+from PyQt5.QtWidgets import (QWidget, QPushButton, QTextEdit, QLabel, QVBoxLayout, QHBoxLayout, QLineEdit, QComboBox)
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-import sys
+from archivos import cargar_y_limpiar
 
 class VentanaPrincipal(QWidget):
 
     def __init__(self):
+        self.df = None
         super().__init__()
         self.setWindowTitle("Proyecto Dataset Diabetes")
         self.setGeometry(100, 100, 1000, 700)
@@ -21,49 +22,84 @@ class VentanaPrincipal(QWidget):
         layout_principal.addWidget(titulo)
         # Área de texto
         self.area_texto = QTextEdit()
+        layout_principal.addWidget(self.area_texto) # CAJA DE BUSQUEDA
+        # Caja de Busqueda
+        self.caja_busqueda = QLineEdit()
+        self.caja_busqueda.setPlaceholderText("Ingrese un valor para buscar")
+        layout_principal.addWidget(self.caja_busqueda)
+        # SELECTOR DE COLUMNA
+        self.combo_columna = QComboBox()
+        self.combo_columna.addItems(["Pregnancies", "Glucose", "BloodPressure","SkinThickness","Insulin","BMI","DiabetesPedigreeFunction","Age","Outcome"])
+        layout_principal.addWidget(self.combo_columna)
+        # AREA DE RESULTADOS
+        self.area_texto = QTextEdit()
+        self.area_texto.setMaximumHeight(180)
         layout_principal.addWidget(self.area_texto)
-        # Layout botones
-        layout_botones = QHBoxLayout()
         # Botones
-        boton_cargar = QPushButton("Cargar Dataset")
-        boton_buscar = QPushButton("Buscar")
-        boton_estadisticas = QPushButton("Estadísticas")
-        boton_filtro = QPushButton("Filtrar")
-        boton_historial = QPushButton("Historial")
-        boton_salir = QPushButton("Salir")
-        # Agregar botones
-        layout_botones.addWidget(boton_cargar)
-        layout_botones.addWidget(boton_buscar)
-        layout_botones.addWidget(boton_estadisticas)
-        layout_botones.addWidget(boton_filtro)
-        layout_botones.addWidget(boton_historial)
-        layout_botones.addWidget(boton_salir)
+        layout_botones = QHBoxLayout()
+        self.boton_cargar = QPushButton("Cargar Dataset")
+        self.boton_buscar = QPushButton("Buscar")
+        self.boton_estadisticas = QPushButton("Estadísticas")
+        self.boton_filtrar = QPushButton("Filtrar")
+        self.boton_historial = QPushButton("Historial")
+        self.boton_salir = QPushButton("Salir")
+        layout_botones.addWidget(self.boton_cargar)
+        layout_botones.addWidget(self.boton_buscar)
+        layout_botones.addWidget(self.boton_estadisticas)
+        layout_botones.addWidget(self.boton_filtrar)
+        layout_botones.addWidget(self.boton_historial)
+        layout_botones.addWidget(self.boton_salir)
         layout_principal.addLayout(layout_botones)
-
         # Área gráfica vacía
         self.figura = Figure()
         self.canvas = FigureCanvas(self.figura)
         layout_principal.addWidget(self.canvas)
-
         # Asignar layout
         self.setLayout(layout_principal)
-
         # CONEXIÓN DE SEÑALES
-        boton_cargar.clicked.connect(self.cargar_dataset)
-        boton_buscar.clicked.connect(self.buscar)
-        boton_estadisticas.clicked.connect(self.estadisticas)
-        boton_filtro.clicked.connect(self.filtrar)
-        boton_historial.clicked.connect(self.historial)
-        boton_salir.clicked.connect(self.close)
+        self.boton_cargar.clicked.connect(self.cargar_dataset)
+        self.boton_buscar.clicked.connect(self.buscar)
+        self.boton_estadisticas.clicked.connect(self.estadisticas)
+        self.boton_filtrar.clicked.connect(self.filtrar)
+        self.boton_historial.clicked.connect(self.historial)
+        self.boton_salir.clicked.connect(self.close)
 
     # FUNCIONES CONECTORAS
     def cargar_dataset(self):
-        self.area_texto.setText("Botón cargar dataset conectado")
+        self.df = cargar_y_limpiar("../Data/diabetes_COMPLETO.csv")
+        if self.df is not None:
+            self.area_texto.setText(
+                f"Dataset cargado correctamente\n\n"
+                f"Filas: {len(self.df)}\n"
+                f"Columnas: {len(self.df.columns)}")
+        else:
+            self.area_texto.setText("Error al cargar dataset")
+
     def buscar(self):
-        self.area_texto.setText("Botón buscar conectado")
+        if self.df is None:
+            self.area_texto.setText("Primero cargue el dataset")
+            return
+        valor = self.caja_busqueda.text()
+
+        if valor == "":
+            self.area_texto.setText("Ingrese un valor para buscar")
+            return
+        resultados = self.df[self.df.astype(str).apply(lambda fila:fila.str.contains(valor,case=False).any(),axis=1)]
+        if len(resultados) == 0:
+            self.area_texto.setText("No se encontraron coincidencias")
+        else:
+            self.area_texto.setText(resultados.head(20).to_string())
+
     def estadisticas(self):
-        self.area_texto.setText("Botón estadísticas conectado")
+        if self.df is None:
+            self.area_texto.setText("Primero cargue el dataset")
+            return
+        columna = self.combo_columna.currentText()
+        estadisticas = self.df[columna].describe()
+        self.area_texto.setText(str(estadisticas))
+
     def filtrar(self):
-        self.area_texto.setText("Botón filtro conectado")
+        self.area_texto.setText("Función lista para integrar con el módulo de análisis.")
+
     def historial(self):
-        self.area_texto.setText("Botón historial conectado")
+        self.area_texto.setText("Función lista para integrar con historial.")
