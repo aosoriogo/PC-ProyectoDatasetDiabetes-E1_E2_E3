@@ -1,18 +1,15 @@
-# Contribuciones del grupo - Entrega 2
+# Contribuciones del grupo - Entrega 3
 
--	**Subida del DataSet y Creación del GitHub:** Alejandro Osorio Gómez
--	**Menú interactivo:** Hannah Estefanía Méndez Rojas
--	**Funcionalidad obligatoria 1:** Sara Katherine Cristancho Páez 
--	**Funcionalidad obligatoria 2:** David Alejandro Cortés Marín 
--	**Funcionalidad opcional:** Ian Jacobo Gómez Barrera
--	**Diagrama de flujo:** Camilo Eduardo Camacho Lara
--	**Video:** Thomas Rincón Giralso
+-	**Estructura de la GUI (interfaz.py) y Ventana Principal: Sara
+-	**Migración de Carga a Pandas (archivos.py): Hannah
+-	**Primer Gráfico de Matplotlib (Barras o Categorías): David
+-	**Segundo Gráfico de Matplotlib (Línea o Tendencia): Alejandro
+-	**Exportación a CSV y vista de historial: Thomas
+-	**Informe PDF Técnico y Conclusión Visual: Camilo / Ian
 -	**README:** Todo el grupo
 
-# Video
-https://drive.google.com/file/d/1ncKUnb2vCN576EwE6p3gdLKiEPfHDbFy/view?usp=sharing
+# Informe del grupo
+https://docs.google.com/document/d/1I-SB6WpIP0w6HQq79qIHF3ZwkOTiqnu76k1lPnj78LQ/edit?usp=sharing
 
-# Diagrama de flujo
-https://miro.com/app/board/uXjVHUOJW1c=/?share_link_id=355158150523
-
-
+# Diapositiva de la presentación
+https://canva.link/j2980h7oyiu8tr8
