@@ -1,1 +1,5 @@
 tabulate >= 0.10.0
+pandas
+matplotlib
+PyQt5
+numpy
