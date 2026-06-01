@@ -7,100 +7,41 @@ import os
 
 DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-#Funciones de la logica del programa
-def cargar_dataset_completo():
-    """
-    Permite al usuario seleccionar un dataset entre el original y una busqueda guardada previamente
-    y lo carga como una lista de diccionarios
-    """
-    global dataset
-    dataset.clear()
+import pandas as pd
 
-    a = cli.selecionar_dataset()
-    if a == 1:
-        ruta = os.path.join(DIR_RAIZ, RUTA_DATASET)
+def buscar_dataframe(df, criterio, exacta=True):
+
+    if exacta:
+        try:
+            valor = float(criterio)
+        except ValueError:
+            raise ValueError(
+                "La búsqueda exacta requiere un valor numérico."
+            )
+
+        mask = (df == valor).any(axis=1)
+
     else:
-        carpeta = os.path.join(DIR_RAIZ, "resultados")
-        print("\n\nLista de archivos guardados: ")
-        for j in os.listdir(carpeta):
-            print(f"\t{j}")
-        
-        archivo = input("Digite nombre del archivo sin extension: ")
-        if archivo == "historial":
-            print("Acceso denegado, elija otro archivo")
-            return False
-        archivo += ".csv"
-        ruta = os.path.join(carpeta, archivo)
-        
+        criterio = str(criterio)
 
-    try:
-        with open(ruta, mode='r', encoding='utf-8') as archivo:
-            # DictReader convierte cada fila en un diccionario
-            lector = csv.DictReader(archivo)
-            for fila in lector:
-                for campo in ["Pregnancies", "Glucose", "BloodPressure", "SkinThickness", "Insulin", "BMI", "DiabetesPedigreeFunction", "Age"]:
-                    fila[campo] = float(fila[campo]) if fila[campo] else 0
+        mask = df.astype(str).apply(
+            lambda col: col.str.contains(criterio, regex=False, na=False)
+        ).any(axis=1)
 
-                fila["Outcome"] = int(fila["Outcome"]) if fila["Outcome"] else 0
-                dataset.append(fila)
-        
-        cli.imprimir_dataset(dataset)
-        print(f"Carga exitosa: {len(dataset)} registros.")
-        util.guardar_historial(5,ruta.split("\\")[-1],len(dataset))
+    return df[mask]
 
-        return True
-    except FileNotFoundError:
-        print(f"ERROR: No se encontró el archivo en la ruta: {ruta}")
-        return []
-    except Exception as err:
-        print(f"Error carga dataset: {err}")
-        return []
-    
-def buscar():
-    '''
-        busca un valor en el dataset e imprime todas las columnas que lo contienen junto con la cantidad de veces que se encontro
-        permite elegir si buscar coincidencias exactas o cualquier coincidencia
-    '''
+def filtrar_por_valor(df, columna, criterio):
 
-    global dataset
+    if columna not in df.columns:
+        return 1, f"La columna '{columna}' no existe"
 
-    #tomar entradas del usuario
-    busqueda = []
-    print("\nElegiste BUSCAR\n")
+    resultado = df[df[columna] == criterio].sort_values(by=columna)
 
-    a = input("digite criterio busqueda: ")
-    b = input("digite 1 para busqueda exacta y 2 para busqueda extendida: ")
-    
-    #realizar busquedas y agregar coincidencias a nueva lista
-    if b == "1": 
-        for linea in dataset:
-            for celda in linea.values():
-                try:
-                    if float(a) == float(celda):
-                        busqueda.append(linea)
-                        break
-                except:
-                    print("Fila erronea, pasando a la siguiente")
-                    continue
-    else:
-        for linea2 in dataset:
-            w = [str(v) for v in linea2.values()]
-            r = " ".join(w)
+    print(f"Se filtraron {len(df) - len(resultado)} resultados")
 
-            if a in r:
-                busqueda.append(linea2)
+    return 0, resultado
 
-    
-    #Imprimir resultados y numero de coincidencias totales
-    if len(busqueda) == 0:
-        print("\nNo se encontraron coincidencias\n")
-        return
-    
-    print(f"\nSe encontraron {len(busqueda)} resultados\n") 
-    cli.imprimir_dataset(busqueda)
 
-    util.guardar_historial(2, a, len(busqueda))
-    cli.save_dataset(busqueda)
 
 def estadisticas_basicas():
     '''imprime el valor maximo, minimo y promedio de la columna seleccionada'''
@@ -183,47 +124,17 @@ def visualizar_historial():
         cli.imprimir_historial(datos)
         return True
     
-def resumen_dataset():
-    global dataset
+def resumen_dataset(datos):
 
-    if len(dataset)<2:
+    if len(datos)<2:
         print("Error: dataset muy corto para calcular resumen")
-        return False
-
-    cols = list(dataset[0].keys())
-    externo = dict()
-
-    for dato in cols:
-        max = None
-        min = None
-        cont = 0
-        acum = 0
-        for fila in dataset:
-            try:
-                x = float(fila[dato])
-
-                if  max == None or max < x:
-                    max = x 
-                if  min == None or min > x:
-                    min = x
-
-                acum += x
-                cont += 1
-
-            except Exception as e:
-                print(f"Saltando fila {e}") #Linea de prueba
-                continue
-
-        if cont > 1:
-            avg = round(acum/cont,2)
-
-            interno = {'max':max, 'media':avg, 'min':min}
-        else:
-            interno = {'error': 'columna no computable'}
-        externo.update({dato: interno})
+        return 1, "Error: dataset muy corto para calcular resumen"
     
-    cli.imprimir_resumen(externo)
-    util.guardar_stadisticas_dataset(externo)
+    try:
+        resumen = datos.agg(['min', 'max', 'mean']).T
+        return 0, resumen
+    except Exception as e:
+        return 1, f"Fallo analisis del dataset: {e}"
 
 
 def guardar_historial(opcion: int, valor, resultados):
@@ -246,16 +157,6 @@ def guardar_historial(opcion: int, valor, resultados):
             t = 'Filtrar por'
         case 5:
             t = 'Seleccion dataset'
-        case '2':
-            t = 'Pacientes en riesgo'
-        case '3':
-            t = 'Guardar filtro'
-        case '4':
-            t = 'Cargar resultados'
-        case '5':
-            t = 'Visualizar historial'
-        case '6':
-            t = 'Funcionalidad opcional'
         case _:
             raise ValueError("Opcion no definida")
     
