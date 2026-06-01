@@ -95,12 +95,13 @@ def mostrar_info(df):  # Muestra información básica del dataset.
     print(df.head())
 
 def exportar_csv(df, nombre_archivo):  # Exporta un DataFrame a CSV.
-    if df is None:
+    if df is None or len(df)<1:
         print("No hay datos para exportar.")
         return 1, "No hay datos para exportar."
 
     try:
-        df.to_csv(nombre_archivo, index=False)
+        archivo = os.path.join(DIR_AUXILIARES, nombre_archivo)
+        df.to_csv(archivo, index=False)
         print(f"Archivo exportado correctamente como: {nombre_archivo}")
         return 0, f"Archivo exportado correctamente como: {nombre_archivo}"
 

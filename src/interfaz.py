@@ -22,6 +22,12 @@ def obtener_dataset():
 
     return 1, "ERROR: fallo la captura del nombre del archivo"
 
+def guardar_dataset():
+    dialog = DialogoFiltro()
+    if dialog.exec_():
+        return dialog.status, dialog.resultado, dialog.filtrados
+
+
 def resultado_busqueda():
     dialog = DialogoBusqueda()
 
@@ -96,7 +102,7 @@ class DialogoBusqueda(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.df = dataset
+        self.df = aux
         self.resultado = None
         self.status = 0
 
@@ -132,15 +138,19 @@ class DialogoBusqueda(QDialog):
     def buscar(self):
 
         criterio = self.txt_criterio.text().strip()
+        if aux == None or len(aux<1):
+            self.resultado = "Es neceario realizar primero una busqueda o filtrado"
+            self.status = 1
+            return
 
         if not criterio:
             QMessageBox.warning(self, "Error", "Ingrese un criterio de búsqueda")
-            self.resultado = "Error, no se ingreso criterio"
+            self.resultado = "Error, no se ingreso nombre archivo"
             self.status = 1
             return 
 
         try:
-            self.resultado = utils.buscar_dataframe(self.df, criterio, self.chk_exacta.isChecked())
+            self.resultado = archivos.exportar_csv(self.df, criterio)
             self.status = 0
 
             self.accept()
@@ -254,6 +264,63 @@ class DialogoEstadisticas(QDialog):
             self.status, self.resultado = utils.estadisticas_pandas(self.df, columna)
             self.accept()
 
+
+
+class DialogoGuardar(QDialog):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.df = aux
+        self.resultado = None
+        self.status = 0
+
+        self.setWindowTitle("Guardar busqueda")
+        self.setModal(True)
+
+        layout = QVBoxLayout()
+
+        layout.addWidget(QLabel("Nombre archivo (sin extension): "))
+
+        self.txt_criterio = QLineEdit()
+        layout.addWidget(self.txt_criterio)
+
+        botones = QHBoxLayout()
+
+        self.btn_buscar = QPushButton("Guardar")
+        self.btn_cancelar = QPushButton("Cancelar")
+
+        botones.addWidget(self.btn_buscar)
+        botones.addWidget(self.btn_cancelar)
+
+        layout.addLayout(botones)
+
+        self.setLayout(layout)
+
+        self.btn_buscar.clicked.connect(self.guardar)
+        self.btn_cancelar.clicked.connect(self.reject)
+
+    def guardar(self):
+
+        criterio = self.txt_criterio.text().strip()
+        criterio = criterio + ".csv"
+
+        if not criterio:
+            QMessageBox.warning(self, "Error", "Ingrese un nombre de archivo")
+            self.resultado = "Error, no se ingreso nonbre archivo"
+            self.status = 1
+            return 
+
+        try:
+            self.resultado = archivos.exportar_csv(self.df, criterio)
+            self.status = 0
+
+            self.accept()
+
+        except Exception as e:
+            self.resultado = f"Error: {e}"
+            self.status = 1
+
 #ventana principal
 class VentanaPrincipal(QWidget):
 
@@ -281,6 +348,8 @@ class VentanaPrincipal(QWidget):
         boton_buscar = QPushButton("Buscar")
         boton_estadisticas = QPushButton("Estadísticas")
         boton_filtro = QPushButton("Filtrar")
+        boton_graficar = QPushButton("Graficar")
+        boton_guardar = QPushButton("Guardar resultados")
         boton_historial = QPushButton("Historial")
         boton_salir = QPushButton("Salir")
         # Agregar botones
@@ -288,6 +357,8 @@ class VentanaPrincipal(QWidget):
         layout_botones.addWidget(boton_buscar)
         layout_botones.addWidget(boton_estadisticas)
         layout_botones.addWidget(boton_filtro)
+        layout_botones.addWidget(boton_graficar)
+        layout_botones.addWidget(boton_guardar)
         layout_botones.addWidget(boton_historial)
         layout_botones.addWidget(boton_salir)
         layout_principal.addLayout(layout_botones)
@@ -305,6 +376,8 @@ class VentanaPrincipal(QWidget):
         boton_buscar.clicked.connect(self.buscar)
         boton_estadisticas.clicked.connect(self.estadisticas)
         boton_filtro.clicked.connect(self.filtrar)
+        boton_graficar.clicked.connect(self.graficar)
+        boton_guardar.clicked.connect(self.guardar)
         boton_historial.clicked.connect(self.historial)
         boton_salir.clicked.connect(self.close)
 
@@ -341,11 +414,13 @@ class VentanaPrincipal(QWidget):
 
     def buscar(self):
         status, procesado = resultado_busqueda()
+
         if status == 0 and len(procesado)>1:
             global aux
             aux = procesado
             cadena = tabulate(procesado, headers='keys', tablefmt='psql') + f"\n\n Coincidencias encontradas: {len(procesado)}"
             self.area_texto.setText(cadena)
+            
         else:
             try:
                 self.area_texto.setText(str(procesado))
@@ -371,6 +446,12 @@ class VentanaPrincipal(QWidget):
                 self.area_texto.setText(str(procesado))
             except:
                 self.area_texto.setText("Error en el filtro")
+    def graficar():
+        pass
+
+    def guardar():
+        _, texto = guardar_dataset()
+        self.area_texto.setText(texto)
         
     def historial(self):
         _, texto = utils.visualizar_historial()
