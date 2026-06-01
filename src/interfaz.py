@@ -403,6 +403,7 @@ class VentanaPrincipal(QWidget):
                 if status == 0:
                     cadena = f"Total datos: {len(dataset)}\n\n" + tabulate(texto, headers='keys', tablefmt='psql')
                     self.area_texto.setText(cadena)
+                    self.graficar()
                 else:
                     self.mostrar_error(texto)
             else:
@@ -420,7 +421,7 @@ class VentanaPrincipal(QWidget):
             aux = procesado
             cadena = tabulate(procesado, headers='keys', tablefmt='psql') + f"\n\n Coincidencias encontradas: {len(procesado)}"
             self.area_texto.setText(cadena)
-            
+
         else:
             try:
                 self.area_texto.setText(str(procesado))
@@ -446,8 +447,7 @@ class VentanaPrincipal(QWidget):
                 self.area_texto.setText(str(procesado))
             except:
                 self.area_texto.setText("Error en el filtro")
-    def graficar():
-        pass
+
 
     def guardar():
         _, texto = guardar_dataset()
@@ -456,3 +456,45 @@ class VentanaPrincipal(QWidget):
     def historial(self):
         _, texto = utils.visualizar_historial()
         self.area_texto.setText(texto)
+
+    def graficar(self):
+        global dataset
+        if dataset is None or len(dataset) == 0:
+            return
+        
+        categorias, prom_glucosa = utils.datos_grafico_glucosa_outcome(dataset)
+        edades, prom_bmi = utils.datos_grafico_bmi_edad(dataset)
+
+        self.figura.clear()
+
+        # ax1 = Gráfico de barras| ax2 = Gráfico de línea 
+        ax1 = self.figura.add_subplot(1, 2, 1)
+        ax2 = self.figura.add_subplot(1, 2, 2)
+
+        # GRÁFICO 1: Barras - Promedio de Glucosa según Diagnóstico 
+        if categorias and prom_glucosa:
+            colores = ['skyblue', 'salmon']
+            barras = ax1.bar(categorias, prom_glucosa, color=colores, edgecolor='black', width=0.5)
+            
+            ax1.set_title("Promedio de Glucosa por Diagnóstico", fontsize=10, fontweight='bold')
+            ax1.set_ylabel("Glucosa (mg/dL)", fontsize=8)
+            ax1.set_ylim(0, max(prom_glucosa) * 1.2) 
+        
+            for barra in barras:
+                yval = barra.get_height()
+                ax1.text(barra.get_x() + barra.get_width()/2.0, yval + 2, f"{yval}", ha='center', va='bottom', fontsize=8, fontweight='bold')
+        else:
+            ax1.text(0.5, 0.5, "Sin datos de Glucosa/Outcome", ha='center', va='center')
+
+        # GRÁFICO 2: Línea - Tendencia del BMI según la Edad 
+        if edades and prom_bmi:
+            ax2.plot(edades, prom_bmi, color='purple', marker='.', linewidth=1.5, linestyle='-')
+            ax2.set_title("Tendencia del BMI Promedio por Edad", fontsize=10, fontweight='bold')
+            ax2.set_xlabel("Edad (Años)", fontsize=8)
+            ax2.set_ylabel("BMI (Índice de Masa Corporal)", fontsize=8)
+            ax2.grid(True, linestyle=':', alpha=0.6) 
+        else:
+            ax2.text(0.5, 0.5, "Sin datos de Edad/BMI", ha='center', va='center')
+
+        self.figura.tight_layout()
+        self.canvas.draw()
