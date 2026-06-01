@@ -210,8 +210,8 @@ class DialogoFiltro(QDialog):
 
 class DialogoEstadisticas(QDialog):
 
-    def _init_(self, parent=None):
-        super()._init_(parent)
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
         global dataset
         self.df = dataset
@@ -251,7 +251,7 @@ class DialogoEstadisticas(QDialog):
             self.status = 1
             return
         else:
-            self.status, self.resultado = utils.estadisticas_basicas(self.df, columna)
+            self.status, self.resultado = utils.estadisticas_pandas(self.df, columna)
             self.accept()
 
 #ventana principal
