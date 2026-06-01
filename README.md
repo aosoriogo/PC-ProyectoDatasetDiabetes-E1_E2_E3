@@ -1,4 +1,4 @@
-# Trabajo-de-Entrega-2-PC
+# Trabajo-de-Entrega-3-PC
 Diabetes dataset
 
 # Instrucciones para correr el programa
