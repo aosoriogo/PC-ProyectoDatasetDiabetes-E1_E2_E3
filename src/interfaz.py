@@ -23,9 +23,10 @@ def obtener_dataset():
     return 1, "ERROR: fallo la captura del nombre del archivo"
 
 def guardar_dataset():
-    dialog = DialogoFiltro()
+    dialog = DialogoGuardar()
     if dialog.exec_():
-        return dialog.status, dialog.resultado, dialog.filtrados
+        return dialog.status, dialog.resultado
+    return 1, "ERROR: No se creo el archivo"
 
 
 def resultado_busqueda():
@@ -102,7 +103,7 @@ class DialogoBusqueda(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.df = aux
+        self.df = dataset
         self.resultado = None
         self.status = 0
 
@@ -138,7 +139,7 @@ class DialogoBusqueda(QDialog):
     def buscar(self):
 
         criterio = self.txt_criterio.text().strip()
-        if aux == None or len(aux<1):
+        if len(self.df)<1:
             self.resultado = "Es neceario realizar primero una busqueda o filtrado"
             self.status = 1
             return
@@ -150,7 +151,7 @@ class DialogoBusqueda(QDialog):
             return 
 
         try:
-            self.resultado = archivos.exportar_csv(self.df, criterio)
+            self.resultado = utils.buscar_dataframe(self.df, criterio, self.chk_exacta)
             self.status = 0
 
             self.accept()
@@ -357,7 +358,7 @@ class VentanaPrincipal(QWidget):
         layout_botones.addWidget(boton_buscar)
         layout_botones.addWidget(boton_estadisticas)
         layout_botones.addWidget(boton_filtro)
-        layout_botones.addWidget(boton_graficar)
+        #layout_botones.addWidget(boton_graficar)
         layout_botones.addWidget(boton_guardar)
         layout_botones.addWidget(boton_historial)
         layout_botones.addWidget(boton_salir)
@@ -376,7 +377,7 @@ class VentanaPrincipal(QWidget):
         boton_buscar.clicked.connect(self.buscar)
         boton_estadisticas.clicked.connect(self.estadisticas)
         boton_filtro.clicked.connect(self.filtrar)
-        boton_graficar.clicked.connect(self.graficar)
+        #boton_graficar.clicked.connect(self.graficar)
         boton_guardar.clicked.connect(self.guardar)
         boton_historial.clicked.connect(self.historial)
         boton_salir.clicked.connect(self.close)
@@ -449,9 +450,9 @@ class VentanaPrincipal(QWidget):
                 self.area_texto.setText("Error en el filtro")
 
 
-    def guardar():
+    def guardar(self):
         _, texto = guardar_dataset()
-        self.area_texto.setText(texto)
+        self.area_texto.setText(texto[1])
         
     def historial(self):
         _, texto = utils.visualizar_historial()

@@ -1,13 +1,9 @@
-import os
 import sys
 
 from PyQt5.QtWidgets import QApplication
 from interfaz import VentanaPrincipal
 
-import analisis as util
 import interfaz as cli
-
-
 
 if __name__ == '__main__':
     app_qt = QApplication(sys.argv)
