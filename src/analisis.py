@@ -168,3 +168,31 @@ def guardar_stadisticas_dataset(datos):
     with open(ruta, 'w', encoding='utf-8') as aw:
         json.dump(datos, aw, indent=4)
         
+
+def datos_grafico_glucosa_outcome(datos):
+    if datos is None or len(datos) == 0:
+        return [], []
+    
+    try:
+        grupo = datos.groupby('Outcome')['Glucose'].mean().reset_index()
+        categorias = ["Sin Diabetes (0)", "Con Diabetes (1)"]
+        promedios = [round(g, 2) for g in grupo['Glucose']]
+        return categorias, promedios
+    except Exception as e:
+        print(f"Error en lógica de glucosa por outcome: {e}")
+        return [], []
+
+def datos_grafico_bmi_edad(datos):
+    if datos is None or len(datos) == 0:
+        return [], []
+        
+    try:
+        # Agrupamos por Edad y sacamos la media del BMI, luego ordenamos por edad
+        grupo = datos.groupby('Age')['BMI'].mean().reset_index().sort_values('Age')
+        
+        edades = list(grupo['Age'])
+        promedios_bmi = [round(b, 2) for b in grupo['BMI']]
+        return edades, promedios_bmi
+    except Exception as e:
+        print(f"Error en lógica de BMI por edad: {e}")
+        return [], []
