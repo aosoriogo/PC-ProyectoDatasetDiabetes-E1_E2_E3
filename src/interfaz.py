@@ -1,7 +1,7 @@
 import sys
 import os
 
-from PyQt5.QtWidgets import (QCheckBox, QTextBrowser, QMainWindow, QLineEdit, QMessageBox, QDialog, QWidget, QPushButton, QTextEdit, QLabel, QVBoxLayout, QHBoxLayout, QApplication)
+from PyQt5.QtWidgets import (QCheckBox, QTextBrowser, QComboBox, QMainWindow, QLineEdit, QMessageBox, QDialog, QWidget, QPushButton, QTextEdit, QLabel, QVBoxLayout, QHBoxLayout, QApplication)
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from tabulate import tabulate
@@ -28,6 +28,12 @@ def resultado_busqueda():
     if dialog.exec_():
         return dialog.status, dialog.resultado
     return 1, "ERROR: fallo la busqueda"
+
+def resultado_filtro():
+    dialog = DialogoFiltro()
+    if dialog.exec_():
+        return dialog.status, dialog.resultado, dialog.filtrados
+    return 1, "Error inesperado en el filtro", None
 
 
 #FUNCIONES DE VENTANAS EMERGENTES (alertas y preguntas)
@@ -143,6 +149,7 @@ class DialogoFiltro(QDialog):
 
         self.df = dataset
         self.resultado = None
+        self.filtrados = None
         self.status = 0
 
         self.setWindowTitle("Filtrar datos")
@@ -191,7 +198,8 @@ class DialogoFiltro(QDialog):
             self.status = 1
             return
         else:
-            self.status, self.resultado = utils.filtrar_por_valor(self.df, columna, criterio)
+            self.status, self.resultado, self.filtrados = utils.filtrar_por_valor(self.df, columna, criterio)
+            self.accept()
 
 
 class VentanaPrincipal(QWidget):
@@ -294,6 +302,17 @@ class VentanaPrincipal(QWidget):
     def estadisticas(self):
         self.area_texto.setText("Botón estadísticas conectado")
     def filtrar(self):
-        self.area_texto.setText("Botón filtro conectado")
+        status, procesado, filtrados = resultado_filtro()
+        if status == 0 and len(procesado)>1:
+            global aux
+            aux = procesado
+            cadena = tabulate(procesado, headers='keys', tablefmt='psql') + f"\n\n Elementos filtrados: {filtrados}"
+            self.area_texto.setText(cadena)
+        else:
+            try:
+                self.area_texto.setText(str(procesado))
+            except:
+                self.area_texto.setText("Error en el filtro")
+        
     def historial(self):
         self.area_texto.setText("Botón historial conectado")

@@ -41,37 +41,7 @@ def estadisticas_basicas():
     util.guardar_historial(3,columna,f"Maximo: {maximo} | media: {promedio} | minimo: {minimo} | {contador}")
 
     
-def filtro():
-    '''
-        filtra los datos encontrando los valores de una columna mayores al valor 
-        que ingrese el usuario.
-    '''
 
-    global dataset
-
-    filtro_l = [] #cambie de filtro a filtro_l para evitar colision en la llamada recursiva
-
-    print("\nElegiste FILTRAR POR CONDICIÓN\n")
-
-    x, y = cli.menu_filtro()
-
-    for fila in dataset:
-        try:
-            if float(fila[x]) >= y:
-                filtro_l.append(fila)
-        except:
-            continue
-
-    filtro_l.sort(key=lambda a: a[x])
-
-    print(f"\nSe filtraron {len(dataset)-len(filtro_l)} resultados\n\n")
-    
-    cli.imprimir_dataset(filtro_l)
-
-    util.guardar_historial(4, x, f"mayores a {y}: {len(filtro_l)}")
-
-    if len(filtro_l) > 1:
-        cli.save_dataset(filtro_l)
 
 
 def visualizar_historial():

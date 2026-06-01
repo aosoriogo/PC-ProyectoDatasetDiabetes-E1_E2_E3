@@ -31,15 +31,19 @@ def buscar_dataframe(df, criterio, exacta=True):
     return df[mask]
 
 def filtrar_por_valor(df, columna, criterio):
+    criterio = float(criterio)
 
     if columna not in df.columns:
         return 1, f"La columna '{columna}' no existe"
 
-    resultado = df[df[columna] == criterio].sort_values(by=columna)
+    try:
+        resultado = df[df[columna] > criterio].sort_values(by=columna)
+    except TypeError:
+        return 1, f"No se puede comparar la columna '{columna}' con el criterio {criterio}", None
 
-    print(f"Se filtraron {len(df) - len(resultado)} resultados")
+    filtrados = len(df) - len(resultado)
 
-    return 0, resultado
+    return 0, resultado, filtrados
 
 
 
@@ -79,38 +83,6 @@ def estadisticas_basicas():
 
     util.guardar_historial(3,columna,f"Maximo: {maximo} | media: {promedio} | minimo: {minimo} | {contador}")
 
-    
-def filtro():
-    '''
-        filtra los datos encontrando los valores de una columna mayores al valor 
-        que ingrese el usuario.
-    '''
-
-    global dataset
-
-    filtro_l = [] #cambie de filtro a filtro_l para evitar colision en la llamada recursiva
-
-    print("\nElegiste FILTRAR POR CONDICIÓN\n")
-
-    x, y = cli.menu_filtro()
-
-    for fila in dataset:
-        try:
-            if float(fila[x]) >= y:
-                filtro_l.append(fila)
-        except:
-            continue
-
-    filtro_l.sort(key=lambda a: a[x])
-
-    print(f"\nSe filtraron {len(dataset)-len(filtro_l)} resultados\n\n")
-    
-    cli.imprimir_dataset(filtro_l)
-
-    util.guardar_historial(4, x, f"mayores a {y}: {len(filtro_l)}")
-
-    if len(filtro_l) > 1:
-        cli.save_dataset(filtro_l)
 
 
 def visualizar_historial():
@@ -138,13 +110,7 @@ def resumen_dataset(datos):
 
 
 def guardar_historial(opcion: int, valor, resultados):
-    """
-    Correcciones realizadas:
-        se movio la funcion de main.py a utilidades.py
-        se cambio el if-elif-else por un match->case (No es recomendable usar if en cadenas de mas de 3 opciones)
-        se agrego un caso por defecto al match->case que levanta un error indicando que no existe ese caso
-        se movio la apertura del archivo hasta despues del match->case (El archivo debe abrirse y cerrarce en el menor numero de operaciones posibles)
-    """
+    
     
     match opcion:
         case 1:
