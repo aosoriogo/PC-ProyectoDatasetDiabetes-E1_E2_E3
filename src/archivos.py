@@ -22,6 +22,20 @@ def cargar_csv(ruta):  # Carga un archivo CSV y retorna un DataFrame.
     except Exception as e:
         print(f"Error al cargar el archivo CSV: {e}")
         return 1, f"Error al cargar el archivo CSV: {e}"
+    
+def cargar_historial():  # Carga el archivo CSV del historial y retorna un DataFrame.
+    try:
+        df = pd.read_csv(os.path.join(DIR_RAIZ, RUTA_HISTORIAL))
+        print("Archivo CSV cargado correctamente.")
+        return 0, df
+
+    except FileNotFoundError:
+        print("Error: el archivo no fue encontrado.")
+        return 1, "Error: el Historial no fue encontrado."
+
+    except Exception as e:
+        print(f"Error al cargar el archivo CSV: {e}")
+        return 1, f"Error al cargar el archivo CSV: {e}"
 
 def cargar_json(ruta):  # Carga un archivo JSON y retorna un DataFrame.
     try:

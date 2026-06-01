@@ -35,6 +35,13 @@ def resultado_filtro():
         return dialog.status, dialog.resultado, dialog.filtrados
     return 1, "Error inesperado en el filtro", None
 
+def resultado_estadisticas():
+    dialog = DialogoEstadisticas()
+
+    if dialog.exec_():
+        return dialog.status, dialog.resultado
+    return 1, "ERROR: fallo las estadisticas"
+
 
 #FUNCIONES DE VENTANAS EMERGENTES (alertas y preguntas)
 class SelectorDataset(QDialog):
@@ -201,7 +208,53 @@ class DialogoFiltro(QDialog):
             self.status, self.resultado, self.filtrados = utils.filtrar_por_valor(self.df, columna, criterio)
             self.accept()
 
+class DialogoEstadisticas(QDialog):
 
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        global dataset
+        self.df = dataset
+        self.resultado = None
+        self.status = 0
+
+        self.setWindowTitle("Estadísticas por Columna")
+        self.setModal(True)
+        self.resize(350, 150)
+
+        layout = QVBoxLayout()
+
+        layout.addWidget(QLabel("Selecciona la columna a analizar:"))
+        self.combo_columnas = QComboBox()
+        self.combo_columnas.addItems(list(self.df.columns) if len(self.df) > 0 else [])
+        layout.addWidget(self.combo_columnas)
+
+        botones = QHBoxLayout()
+        self.btn_ok = QPushButton("Calcular")
+        self.btn_cancel = QPushButton("Cancelar")
+
+        botones.addWidget(self.btn_ok)
+        botones.addWidget(self.btn_cancel)
+        layout.addLayout(botones)
+
+        self.setLayout(layout)
+
+        self.btn_ok.clicked.connect(self.procesar)
+        self.btn_cancel.clicked.connect(self.reject)
+
+    def procesar(self):
+        columna = self.combo_columnas.currentText()
+
+        if not columna:
+            QMessageBox.warning(self, "Error", "El dataset no posee columnas válidas para operar.")
+            self.resultado = "Error: Sin columnas válidas"
+            self.status = 1
+            return
+        else:
+            self.status, self.resultado = utils.estadisticas_pandas(self.df, columna)
+            self.accept()
+
+#ventana principal
 class VentanaPrincipal(QWidget):
 
     def __init__(self):
@@ -300,7 +353,12 @@ class VentanaPrincipal(QWidget):
                 self.area_texto.setText("Error en la busqueda")
 
     def estadisticas(self):
-        self.area_texto.setText("Botón estadísticas conectado")
+        status, texto = resultado_estadisticas()
+        if status == 0:
+            self.area_texto.setText(texto)
+        else:
+            self.area_texto.setText("Error en procesamiento de estadisticas")
+        
     def filtrar(self):
         status, procesado, filtrados = resultado_filtro()
         if status == 0 and len(procesado)>1:
@@ -315,4 +373,5 @@ class VentanaPrincipal(QWidget):
                 self.area_texto.setText("Error en el filtro")
         
     def historial(self):
-        self.area_texto.setText("Botón historial conectado")
+        _, texto = utils.visualizar_historial()
+        self.area_texto.setText(texto)
