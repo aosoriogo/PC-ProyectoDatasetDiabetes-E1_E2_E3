@@ -45,6 +45,49 @@ def filtrar_por_valor(df, columna, criterio):
 
     return 0, resultado, filtrados
 
+def estadisticas_pandas(datos, columna):
+    if datos is None or len(datos) == 0:
+        return 1, "Error: Dataset vacío o no cargado."
+        
+    if columna not in datos.columns:
+        return 1, f"Error: La columna '{columna}' no existe."
+        
+    try:
+        lista_filas = datos[columna].values.tolist()
+        
+        valores_numericos = [
+            float(valor) for valor in lista_filas 
+            if str(valor).replace('.', '', 1).isdigit() or (isinstance(valor, (int, float)))
+        ]
+
+        if len(valores_numericos) > 0:
+            # Cálculos estadísticos 
+            maximo = max(valores_numericos)
+            minimo = min(valores_numericos)
+            promedio = round(sum(valores_numericos) / len(valores_numericos), 2)
+            contador = len(valores_numericos)
+            lineas_reporte = [
+                "==================================================",
+                f"  REPORTE ESTADÍSTICO DE LA COLUMNA: {columna}",
+                "==================================================\n",
+                f" · Valor Mínimo: {minimo}",
+                f" · Valor Máximo: {maximo}",
+                f" · Promedio:     {promedio}\n",
+                f" Total de registros válidos procesados: {contador} filas.",
+                "=================================================="
+            ]
+            
+            cadena_resultado = "\n".join(lineas_reporte)
+            #info_historial = f"Max: {maximo} | Min: {minimo} | Prom: {promedio} | Cant: {contador}"
+            #guardar_historial(3, columna, info_historial)
+            
+            return 0, cadena_resultado
+        else:
+            return 1, f"La columna '{columna}' no contiene datos numéricos válidos."
+            
+    except Exception as e:
+        return 1, f"Error en la comprensión de listas o join: {e}"
+
 
 
 def estadisticas_basicas():
