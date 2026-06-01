@@ -1,11 +1,17 @@
 
 # Aqui se almacenan las funciones que se reusan pero no hacen parte directa de la logica
-import datetime as dt
 import csv
 import json
 import os
 
+import datetime as dt
+from tabulate import tabulate
+
+from archivos import cargar_historial
+
+
 DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+RUTA_HISTORIAL = "resultados\\historial.csv"
 
 import pandas as pd
 
@@ -78,8 +84,8 @@ def estadisticas_pandas(datos, columna):
             ]
             
             cadena_resultado = "\n".join(lineas_reporte)
-            #info_historial = f"Max: {maximo} | Min: {minimo} | Prom: {promedio} | Cant: {contador}"
-            #guardar_historial(3, columna, info_historial)
+            info_historial = f"Max: {maximo} | Min: {minimo} | Prom: {promedio} | Cant: {contador}"
+            guardar_historial(3, columna, info_historial)
             
             return 0, cadena_resultado
         else:
@@ -87,57 +93,16 @@ def estadisticas_pandas(datos, columna):
             
     except Exception as e:
         return 1, f"Error en la comprensión de listas o join: {e}"
-
-
-
-def estadisticas_basicas():
-    '''imprime el valor maximo, minimo y promedio de la columna seleccionada'''
-
-    global dataset
-
-    maximo = None
-    minimo = None
-    suma = 0
-    contador = 0
-
-    print("\nElegiste ESTADÍSTICAS BÁSICAS\n")
-
-    columna = cli.menu_estadisticas()
-
-    for fila in dataset:
-        try:
-            valor = float(fila[columna])
-        except:
-            continue
-
-        if maximo is None or valor > maximo:
-            maximo = valor
-        if minimo is None or valor < minimo:
-            minimo = valor 
-
-        suma += valor 
-        contador += 1
-
-    if contador > 0:
-        promedio = suma/contador
-        print(f"Máximo: {maximo} · Mínimo: {minimo} · Promedio: {round(promedio,1)}")
-    else:
-        print("No hay datos en la columna")
-
-    util.guardar_historial(3,columna,f"Maximo: {maximo} | media: {promedio} | minimo: {minimo} | {contador}")
-
-
+ 
 
 def visualizar_historial():
-    """ 
-     Lee el archivo del historial y lo imprime formateado 
-     (funcion obligatoria Entrega 2) 
-    """
-
-    with open(os.path.join(DIR_RAIZ, RUTA_HISTORIAL), mode='r', encoding='utf-8') as archivo:
-        datos = csv.reader(archivo, delimiter=",")
-        cli.imprimir_historial(datos)
-        return True
+    try:
+        _, datos = cargar_historial()
+        cadena = tabulate(datos, headers='keys', tablefmt='psql')
+        return 0, cadena
+    except:
+        return 1, "Error de carga de historial"
+    
     
 def resumen_dataset(datos):
 
